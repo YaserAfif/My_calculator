@@ -1,0 +1,135 @@
+/* دفتر حسابات ۲۲ — definitive form layout, 2 rows for hawala/exchange,
+   one data row for journal; original inputs and business logic are preserved. */
+:root{--v22-border:#d9e4ec;--v22-ink:#21374a;--v22-muted:#667b8d;--v22-soft:#f6f9fc}
+.v22-form{--v22-accent:#0a7996;--v22-accent-lite:#e9f5f9;position:relative}
+#v13-in-form.v22-form{--v22-accent:#c14257;--v22-accent-lite:#fff0f1}
+#v13-out-form.v22-form{--v22-accent:#148466;--v22-accent-lite:#e9f8f1}
+#exchangeForm.v22-form{--v22-accent:#6857ac;--v22-accent-lite:#f0edfb}
+#entryForm.v22-form{--v22-accent:#087f9d;--v22-accent-lite:#eaf8fa}
+#v13-in-form.v20-hawala-layout.v22-form,#v13-out-form.v20-hawala-layout.v22-form,#exchangeForm.v22-form{
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:12px!important;width:100%!important;max-width:100%!important;overflow:visible!important;box-sizing:border-box!important
+}
+.v22-form>.v19-form-kicker{order:0!important;grid-column:auto!important;grid-row:auto!important;margin:0!important;
+ padding:12px 15px!important;max-width:100%;border:1px solid var(--v22-border);border-radius:14px!important;
+ background:linear-gradient(100deg,var(--v22-accent-lite),#fff)!important;color:var(--v22-ink)!important}
+.v22-form>.v19-form-kicker strong{font-size:15px!important;letter-spacing:0}
+.v22-form>.v19-form-kicker .v19-kicker-icon{background:var(--v22-accent)!important;color:#fff!important;border-radius:10px!important}
+.v22-form>.v22-row{width:100%;box-sizing:border-box;min-width:0;direction:rtl;align-items:end!important;
+ background:#fff;border:1px solid var(--v22-border);border-radius:15px;box-shadow:0 4px 20px #193c5910;padding:16px!important;gap:10px!important;
+ display:grid!important;grid-auto-flow:row!important;overflow:visible!important}
+.v22-form>.v22-primary{border-top:3px solid var(--v22-accent)}
+#v13-in-form>.v22-primary,#v13-out-form>.v22-primary{
+ grid-template-columns:minmax(61px,.55fr) minmax(118px,1.04fr) minmax(148px,1.75fr) minmax(97px,1fr) minmax(68px,.66fr) minmax(70px,.75fr) minmax(74px,.81fr) minmax(100px,1.1fr) minmax(66px,.68fr)!important}
+.v22-row>.field,.v22-row>.v22-fee-pair,.v22-row>.v22-operation{min-width:0!important;grid-column:auto!important;grid-row:auto!important;
+ display:flex!important;flex-direction:column!important;justify-content:flex-end!important;align-self:stretch!important;margin:0!important;padding:0!important;order:0!important}
+.v22-row>.field[hidden],.v22-form .v22-methods>.field[hidden],.v22-form .v22-advanced>.field[hidden]{display:none!important}
+.v22-row .field{margin:0!important;min-width:0!important}
+.v22-row .field>label,.v22-row>.field>label,.v22-row .v22-operation label,.v22-row .currency-picker>label{
+ display:block!important;margin:0 0 7px!important;color:var(--v22-muted)!important;font-weight:750!important;font-size:11.5px!important;
+ min-height:17px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v22-form .v22-row input:not([type=radio]):not([type=hidden]):not(.v17-native-date),.v22-form .v22-row select,
+.v22-form .v22-row button.v17-date-trigger,.v22-form .v22-row button.currency-trigger{
+ min-width:0!important;max-width:100%!important;width:100%!important;min-height:44px!important;height:44px!important;
+ box-sizing:border-box!important;background:#fff!important;color:var(--v22-ink)!important;border:1px solid #cfdce6!important;
+ border-radius:9px!important;outline-offset:2px;padding:8px 10px!important;font-size:13px!important;box-shadow:inset 0 1px 1px #17395606!important}
+.v22-row input:focus,.v22-row select:focus,.v22-row button:focus-visible{
+ border-color:var(--v22-accent)!important;outline:2px solid color-mix(in srgb,var(--v22-accent) 22%,transparent)!important}
+.v22-row input[readonly]{background:#f3f7fa!important;color:#607489!important;font-weight:800}
+.v22-row input[inputmode=decimal],.v22-row input[inputmode=numeric]{font-variant-numeric:tabular-nums;direction:ltr!important;text-align:center!important;font-weight:750}
+.v22-row select{cursor:pointer;padding-inline:4px!important;font-weight:750}
+.v22-form .v22-col-currency select,.v22-form .v22-col-target-currency select{font-size:12px!important;letter-spacing:-.2px}
+.v22-form>.v22-secondary{background:var(--v22-soft);grid-template-columns:minmax(170px,1.15fr) minmax(98px,.75fr) minmax(200px,3.5fr)!important}
+#v13-out-form>.v22-secondary{grid-template-columns:minmax(180px,1.2fr) minmax(126px,1fr) minmax(94px,.7fr) minmax(200px,3.2fr)!important}
+.v22-form .v22-fee-pair{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(66px,.48fr);gap:7px;align-items:end}
+.v22-form .v22-fee-pair .field:last-child label{font-size:11px!important}
+.v22-form .v22-fee-pair .field:last-child select{padding-inline:4px!important}
+#v13-out-form .v22-secondary>.v21-sarraf-fee{grid-column:auto!important}
+.v22-form>.v22-advanced{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+.v22-form>.v22-advanced:empty{display:none!important}
+.v22-advanced>.field{grid-column:auto!important;order:0!important;grid-row:auto!important;min-width:0}
+.v22-advanced>.field[hidden]{display:none!important}
+.v22-advanced>.field input{width:100%;min-height:42px;border-radius:9px;border:1px solid var(--v22-border);padding:8px}
+.v22-form>.v22-methods{border:1px solid #dce7ed;background:#f8fafc;padding:12px 14px;border-radius:14px;display:flex;flex-wrap:wrap;align-items:end;gap:10px}
+.v22-form .v22-methods>.field{min-width:0!important;grid-column:auto!important;grid-row:auto!important;margin:0!important;order:0!important;flex:1 1 auto}
+.v22-form .v22-methods>.field:has(.v13-mode),.v22-form .v22-methods>.mode-block{padding:0!important;background:transparent!important;border:0!important}
+.v22-form .v22-methods .v13-mode,.v22-form .v22-methods .entrymodes{display:flex!important;gap:8px!important;flex-wrap:wrap;align-items:center;margin:5px 0 0!important}
+.v22-form .v22-methods .v13-mode label,.v22-form .v22-methods .entrymodes label{min-height:40px!important;border-radius:10px!important;border:1px solid #cfdee7!important;
+ background:#fff!important;padding:9px 14px!important;color:#4b6272!important;font-size:12px!important;font-weight:750!important;cursor:pointer}
+.v22-form .v22-methods label:has(input[type=radio]:checked){color:var(--v22-accent)!important;background:var(--v22-accent-lite)!important;border-color:var(--v22-accent)!important}
+.v22-form .v22-obsolete-mode{display:none!important}
+.v22-form>.v22-actions{display:flex;gap:10px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
+.v22-form .v22-actions>.primary{width:auto!important;min-width:150px!important;margin:0!important;border-radius:11px!important;
+ background:var(--v22-accent)!important;color:#fff!important;min-height:44px;font-weight:850!important}
+.v22-form .v22-actions>.secondary{width:auto!important;margin:0!important}
+#v13-in-form>.v22-actions>.v20-form-submit,#v13-out-form>.v22-actions>.v20-form-submit{grid-column:auto!important;grid-row:auto!important;order:0!important;justify-self:auto!important}
+/* Journal: one consistent horizontal data row; the currency badge is embedded between amounts. */
+#entryForm .journal-stack{display:flex!important;flex-direction:column!important;gap:12px!important;align-items:stretch!important}
+#entryForm .v22-journal-primary{display:grid!important;grid-template-columns:minmax(120px,1.12fr) minmax(170px,1.8fr) minmax(270px,2.4fr) minmax(220px,2.7fr)!important}
+#entryForm .v22-journal-primary>.amount-row{grid-column:auto!important;grid-row:auto!important;display:grid!important;
+ grid-template-columns:minmax(0,1fr) 68px minmax(0,1fr)!important;gap:7px!important;align-items:end!important;align-self:stretch!important}
+#entryForm .v22-journal-primary>.amount-row>.field{align-self:stretch!important;grid-column:auto!important;grid-row:auto!important}
+#entryForm .v22-journal-primary .account-combobox{min-width:0;width:100%}
+#entryForm .v22-journal-primary .currency-picker{align-self:stretch;min-width:0}
+#entryForm .v22-journal-primary .currency-trigger{padding:5px 3px!important;font-size:11px!important}
+#entryForm .v22-journal-primary .field:has(#note){grid-column:auto!important;grid-row:auto!important}
+/* Exchange: one complete rate row and a separate P&L + explanation row. */
+#exchangeForm>.v22-exchange-primary{
+ grid-template-columns:minmax(118px,1fr) minmax(160px,1.9fr) minmax(92px,1.08fr) minmax(70px,.65fr) minmax(88px,.8fr) minmax(104px,1fr) minmax(105px,1.15fr) minmax(68px,.65fr)!important}
+#exchangeForm>.v22-exchange-secondary{grid-template-columns:minmax(240px,1.15fr) minmax(240px,2.5fr)!important}
+#exchangeForm .v22-operation>.exchange-operation{min-height:44px;display:flex;justify-content:stretch;gap:4px;padding:3px!important;border:1px solid #cfdae5!important;border-radius:9px!important;background:white!important}
+#exchangeForm .v22-operation .exchange-operation label{flex:1 1 auto;min-width:0;margin:0!important;padding:8px 3px!important;text-align:center;font-size:12px}
+#exchangeForm>.v22-exchange-primary .field:has(#exchangeFromAmount),#exchangeForm>.v22-exchange-primary .field:has(#exchangeToAmount){min-width:0}
+#exchangeForm .v22-profit-result{display:flex;align-items:center;justify-content:center;text-align:center;min-height:44px;padding:8px 12px;
+ box-sizing:border-box;border-radius:9px;border:1px solid #d2dce8;background:#fff;color:#5e6d87;font-size:12px;font-weight:800}
+#exchangeForm .v22-profit-positive{background:#eaf9ef;color:#166f44;border-color:#a3dfb7}
+#exchangeForm .v22-profit-negative{background:#fff0f0;color:#ac2d3a;border-color:#edb6c0}
+#exchangeForm>.exchange-rate{align-self:stretch;margin:0!important;border-radius:10px!important}
+#exchangeForm>.exchange-arrow{display:none!important}
+/* Old empty pair wrappers are layout artifacts only. */
+#exchangeForm>.exchange-pair:empty,#exchangeForm>.exchange-rate-controls:empty{display:none!important}
+@media(max-width:1290px){
+ #v13-in-form>.v22-primary,#v13-out-form>.v22-primary{grid-template-columns:90px minmax(115px,1fr) minmax(175px,2fr) minmax(95px,1fr) 75px 90px 90px minmax(110px,1.1fr) 75px!important;gap:7px!important}
+ #v13-in-form>.v22-primary,#v13-out-form>.v22-primary{overflow-x:auto!important}
+ #exchangeForm>.v22-exchange-primary{grid-template-columns:120px minmax(150px,1.8fr) 98px 70px 85px 98px 110px 72px!important;overflow-x:auto!important}
+}
+@media(max-width:1050px){
+ #v13-in-form>.v22-primary,#v13-out-form>.v22-primary{grid-template-columns:repeat(12,minmax(0,1fr))!important;overflow:visible!important}
+ #v13-in-form>.v22-primary>.v22-col-id,#v13-out-form>.v22-primary>.v22-col-id{grid-column:span 2!important}
+ #v13-in-form>.v22-primary>.v22-col-date,#v13-out-form>.v22-primary>.v22-col-date{grid-column:span 3!important}
+ #v13-in-form>.v22-primary>.v22-col-account,#v13-out-form>.v22-primary>.v22-col-account{grid-column:span 7!important}
+ #v13-in-form>.v22-primary>.v22-col-amount,#v13-out-form>.v22-primary>.v22-col-amount{grid-column:span 3!important}
+ #v13-in-form>.v22-primary>.v22-col-currency,#v13-out-form>.v22-primary>.v22-col-currency{grid-column:span 2!important}
+ #v13-in-form>.v22-primary>.v22-col-rate,#v13-out-form>.v22-primary>.v22-col-rate{grid-column:span 2!important}
+ #v13-in-form>.v22-primary>.v22-col-operation,#v13-out-form>.v22-primary>.v22-col-operation{grid-column:span 2!important}
+ #v13-in-form>.v22-primary>.v22-col-converted,#v13-out-form>.v22-primary>.v22-col-converted{grid-column:span 2!important}
+ #v13-in-form>.v22-primary>.v22-col-target-currency,#v13-out-form>.v22-primary>.v22-col-target-currency{grid-column:span 1!important}
+ #entryForm .v22-journal-primary{grid-template-columns:minmax(100px,1fr) minmax(150px,1.7fr) minmax(245px,2.2fr)!important}
+ #entryForm .v22-journal-primary>.field:has(#note){grid-column:1/-1!important}
+ #exchangeForm>.v22-exchange-primary{grid-template-columns:repeat(12,minmax(0,1fr))!important;overflow:visible!important}
+ #exchangeForm>.v22-exchange-primary>.field{grid-column:span 3!important}
+ #exchangeForm>.v22-exchange-primary>.field:has(#exchangeFromAccount){grid-column:span 6!important}
+ #exchangeForm>.v22-exchange-primary>.v22-operation{grid-column:span 3!important}
+}
+@media(max-width:650px){
+ .v22-form>.v22-row{padding:12px!important;gap:10px!important;border-radius:12px}
+ #v13-in-form>.v22-primary,#v13-out-form>.v22-primary,#exchangeForm>.v22-exchange-primary{grid-template-columns:repeat(2,minmax(0,1fr))!important;overflow:visible!important}
+ #v13-in-form>.v22-primary>.field,#v13-out-form>.v22-primary>.field,#exchangeForm>.v22-exchange-primary>.field,#exchangeForm>.v22-exchange-primary>.v22-operation{grid-column:span 1!important}
+ #v13-in-form>.v22-primary>.v22-col-account,#v13-out-form>.v22-primary>.v22-col-account,#exchangeForm>.v22-exchange-primary>.field:has(#exchangeFromAccount){grid-column:1/-1!important}
+ #v13-in-form>.v22-primary>.v22-col-id,#v13-out-form>.v22-primary>.v22-col-id{grid-column:span 1!important}
+ #v13-in-form>.v22-primary>.v22-col-amount,#v13-out-form>.v22-primary>.v22-col-amount{grid-column:span 1!important}
+ #v13-in-form>.v22-secondary,#v13-out-form>.v22-secondary,#exchangeForm>.v22-exchange-secondary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .v22-form>.v22-secondary>.field:has(input[id$="-note"]),.v22-form>.v22-secondary>.field:has(#exchangeNote){grid-column:1/-1!important}
+ #entryForm .v22-journal-primary{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #entryForm .v22-journal-primary>.amount-row{grid-column:1/-1!important}
+ #entryForm .v22-journal-primary>.field:has(#note){grid-column:1/-1!important}
+ .v22-form>.v22-advanced{grid-template-columns:1fr}
+ .v22-form .v22-methods .entrymodes label,.v22-form .v22-methods .v13-mode label{flex:1 1 auto!important;min-width:110px}
+}
+@media(max-width:375px){.v22-form>.v22-primary .v22-col-operation{grid-column:1/-1!important}.v22-form>.v22-secondary{grid-template-columns:1fr!important}
+ #exchangeForm>.v22-exchange-secondary{grid-template-columns:1fr!important}}
+@media print{.v22-form>.v22-row{box-shadow:none!important;border-color:#bbb!important}.v22-form>.v22-methods{display:none!important}}
+/* Keep the real ISO date input visually hidden; the visible Shamsi picker is its button.
+   A form-wide input rule must never stretch an absolutely positioned hidden date field. */
+.v22-form .v22-row input.v17-native-date{position:absolute!important;opacity:0!important;pointer-events:none!important;
+ width:1px!important;min-width:1px!important;max-width:1px!important;height:1px!important;min-height:1px!important;
+ padding:0!important;border:0!important;overflow:hidden!important}

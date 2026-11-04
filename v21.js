@@ -4,7 +4,7 @@
 (()=>{'use strict';
 const C=window.MC14,$=id=>document.getElementById(id);
 if(!C)return;
-const VERSION='21.0.0', EPS=1e-7;
+const VERSION='22.0.0', EPS=1e-7;
 const today=()=>C.today(), amount=x=>Number(x)||0;
 const effect=r=>window.MC19?.cashEffect?.(r)||0;
 const label=(name)=>String(name||'');
