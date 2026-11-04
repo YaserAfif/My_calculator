@@ -1,0 +1,43 @@
+/* v16 — green cash-in / red cash-out, compact Exact-inspired ledger */
+:root{--v16-green:#087a55;--v16-green-bg:#e2f7ed;--v16-red:#c33248;--v16-red-bg:#fce7e9;--v16-stroke:#d8e5e9}
+.v16-green,.v16-inflow,.type-talab{color:var(--v16-green)!important;font-weight:750}
+.v16-red,.v16-outflow,.type-got{color:var(--v16-red)!important;font-weight:750}
+.v13-doc-table th:nth-child(3){color:var(--v16-red)}.v13-doc-table th:nth-child(4){color:var(--v16-green)}
+.v16-money{display:inline-block;white-space:nowrap;font-variant-numeric:tabular-nums;margin:2px 2px;padding:2px 5px;border-radius:5px}
+.v16-money.v16-green{background:var(--v16-green-bg)}.v16-money.v16-red{background:var(--v16-red-bg)}
+.v16-flow-in button[type=submit],.v16-flow-in .primary[type=submit]{background:#0c8a5a!important;border-color:#0c8a5a!important;color:#fff!important}
+.v16-flow-out button[type=submit],.v16-flow-out .primary[type=submit]{background:#c83b4b!important;border-color:#c83b4b!important;color:#fff!important}
+label.v16-mode-in{background:var(--v16-green-bg)!important;color:#076844!important;border:2px solid #24ae79!important;font-weight:800}
+label.v16-mode-out{background:var(--v16-red-bg)!important;color:#a52237!important;border:2px solid #e25469!important;font-weight:800}
+.v16-number-preview{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;background:#eef6fa;border:1px dashed #a3c2d5;border-radius:10px;padding:9px 12px;color:#326179;font-size:12px}
+.v16-number-preview strong{font-size:14px;color:#153c55}
+.v16-refresh{border:1px solid #b8d2d5;background:#fff;color:#1a606d;font-weight:700;border-radius:12px;min-height:38px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.v16-refresh:hover{background:#e2f3f2}
+#v16-field-settings{margin-top:15px}.v16-setting-grid{display:grid;gap:9px;margin:12px 0}.v16-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid #d4e4e4;border-radius:10px;background:#f7fbfa;font-size:13px}
+.v16-toggle-row input{width:19px;height:19px;flex:none}
+.v16-muted{font-size:12px;color:#58707a;line-height:1.8}
+[hidden]{display:none!important}
+.v16-small-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px}.v16-small-actions .v14-help{margin:0}
+.v16-ledger-card{margin-top:14px;background:#fff;border:1px solid var(--v16-stroke);border-radius:17px;overflow:hidden;box-shadow:0 6px 23px #153e4c0b}
+.v16-ledger-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:15px 17px;background:#f4f9fb;border-bottom:1px solid var(--v16-stroke)}
+.v16-ledger-heading h3{font-size:15px;margin:0 0 4px}.v16-ledger-heading p{font-size:11px;color:#69828d;margin:0}.v16-ledger-heading>span{font-size:12px;color:#315d70;background:#e5f0f4;padding:4px 9px;border-radius:20px}
+.v16-table-scroll{max-width:100%;overflow-x:auto}.v16-ledger-table{width:100%;border-collapse:collapse;min-width:770px;line-height:1.6;font-size:12px}
+.v16-ledger-table thead{background:#eaf2f5}.v16-ledger-table th{text-align:right;padding:12px 10px;white-space:nowrap;color:#3a5a6a;border-bottom:1px solid var(--v16-stroke)}
+.v16-ledger-table td{vertical-align:top;border-bottom:1px solid #e9f0f2;padding:11px 10px;color:#2d4d59}.v16-ledger-table tr:hover td{background:#f9fcfd}
+.v16-ledger-table small{display:block;color:#75909b;font-weight:400}.v16-sub{font-size:10px;color:#7b95a3;direction:ltr;text-align:right}
+.v16-small-btn{border:1px solid #a3c5d4;background:#edf6fa;color:#19617d;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:750;white-space:nowrap;cursor:pointer}.v16-small-btn:hover{background:#d9ebf3}.v16-small-btn.v16-pay{background:#087a55;border-color:#087a55;color:#fff}
+.v16-ledger-footer{display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:11px 15px;font-size:11px;background:#f9fcfd}.v16-ledger-footer button{padding:5px 10px;border:1px solid #c9dfe6;background:#fff;border-radius:8px}.v16-ledger-footer button:disabled{opacity:.4}
+.v16-ledger-active>.v13-report-table-wrap,.v16-ledger-active>#v13-detail-pager{display:none!important}
+.v16-pending-summary{background:#fff7e9;padding:13px 16px;border-bottom:1px solid #f1dfbd}.v16-pending-stats{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}.v16-pending-stats strong{color:#7a5213;font-size:13px}.v16-pending-stats small{margin-inline-start:auto;color:#906f37}.v16-pending-total{font-weight:800;font-size:14px;color:#bf7832}
+.v16-pending-list{display:grid;gap:7px;max-height:330px;overflow:auto;margin-top:12px}.v16-pending-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;background:#fff;border:1px solid #e9d8b8;border-radius:10px;padding:10px}
+.v16-pending-item b{font-size:13px}.v16-pending-item span{font-size:11px;color:#77848b}.v16-pending-item small{display:block;font-size:10px;color:#7e929b}.v16-pending-mount{font-weight:750;font-variant-numeric:tabular-nums;color:#ad5716!important}
+#licenseActivate,#licenseSettingsActivate,#licenseShowActivate{width:auto!important;max-width:160px!important;min-width:100px;min-height:36px!important;padding:7px 13px!important;white-space:nowrap!important;font-size:12px!important}
+.license-key-row{display:flex;gap:7px;align-items:center}.license-key-row input{min-width:0;width:100%}.license-panel button.primary{font-size:13px}
+@media(max-width:650px){.v16-ledger-heading{padding:13px}.v16-pending-item{grid-template-columns:1fr auto}.v16-pending-item .v16-pay{grid-column:2}.v16-pending-item span{white-space:nowrap}.v16-refresh{padding:6px 9px}}
+@media(max-width:380px){#licenseActivate,#licenseSettingsActivate{min-width:90px;max-width:130px!important}.v16-number-preview{display:grid}}
+#v15-report.v16-report-active>.v15-scroll,#v15-report.v16-report-active>.v15-pager{display:none!important}
+#v16-voucher-report{margin-top:14px;border:1px solid #d4e2e6;border-radius:13px;overflow:hidden}
+#v16-report-count{border:1px solid #c9dfe6;border-radius:6px;padding:4px;background:#fff;color:#284c5b}
+.v15-daily-table th:nth-child(4),.v15-daily-table td:nth-child(4),#v15-report-table th:nth-child(4){color:var(--v16-red)!important}
+.v15-daily-table th:nth-child(5),.v15-daily-table td:nth-child(5),#v15-report-table th:nth-child(5){color:var(--v16-green)!important}
+.v14-recent .v14-amount.credit{color:var(--v16-red)}.v14-recent .v14-amount.debit{color:var(--v16-green)}
