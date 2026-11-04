@@ -4,7 +4,7 @@
 (()=>{'use strict';
 const C=window.MC14,$=id=>document.getElementById(id);if(!C)return;
 const ver='20.0.0';
-function title(){document.title='دفتر حسابات — نسخه ۲۰';if($('appVersion'))$('appVersion').textContent=ver;document.querySelectorAll('.v14-version').forEach(e=>e.textContent='نسخه ۲۰');}
+function title(){document.title='دفتر حسابات';if($('appVersion'))$('appVersion').textContent=ver;}
 // Number sequences are independent for each sarraf and for inbound/outbound remittances.
 function syncNumbers(kind){
  const p='v13-'+kind,input=$(p+'-number'),name=$(p+'-account')?.value.trim();if(!input)return;
