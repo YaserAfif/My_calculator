@@ -1,7 +1,7 @@
 /* دفتر حسابات v24 — single-file JavaScript bundle. Keep the original execution order. */
 if (typeof document === 'undefined') {
 /* ===== PWA service worker (runs only in service-worker context) ===== */
-const CACHE_NAME = 'mycalc-v24-1-consolidated-assets-v2';
+const CACHE_NAME = 'mycalc-v24-2-cloud-sync-v1';
 const ASSETS = ['./','./index.html','./app.js','./style.css','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon.svg'];
 self.addEventListener('install', event => {event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('mycalc-v13-preview-')||k.startsWith('mycalc-v14-')||k.startsWith('mycalc-v15-')||k.startsWith('mycalc-v16-')||k.startsWith('mycalc-v17-')||k.startsWith('mycalc-v18-')||k.startsWith('mycalc-v19-')||k.startsWith('mycalc-v20-')||k.startsWith('mycalc-v21-')||k.startsWith('mycalc-v22-')||k.startsWith('mycalc-v23-')||k.startsWith('mycalc-v24-'))&&k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
@@ -38,7 +38,7 @@ function positionFloatingMenu(){const vv=window.visualViewport;if(!vv)return;con
 if(window.visualViewport){window.visualViewport.addEventListener('resize',positionFloatingMenu);window.visualViewport.addEventListener('scroll',positionFloatingMenu)}window.addEventListener('resize',positionFloatingMenu);positionFloatingMenu();
 function resetAmountFields(){ $('gotAmount').value='';$('talabAmount').value='';syncAmountFields(); }
 for(const id of ['gotAmount','talabAmount']){const el=$(id);el.addEventListener('input',()=>syncAmountFields());el.addEventListener('focus',()=>syncAmountFields());el.addEventListener('blur',()=>setTimeout(()=>syncAmountFields(),0));}
-const APP_VERSION='24.1.0';const DEFAULT_ACCOUNTS=['خزانه','مصارف','پرداخت نشده'];
+const APP_VERSION='24.2.0';const DEFAULT_ACCOUNTS=['خزانه','مصارف','پرداخت نشده'];
 let CURRENCIES_KEY='hesabket.currencies.v8';let currencies=['AFN','USD','PKR'];let STORAGE_KEY='hesabket.records.v1', ACCOUNTS_KEY='hesabket.accounts.v3', SETTINGS_KEY='hesabket.settings.v3';let accounts=[],settings={calendar:'jalali',theme:'light',title:'دفتر حسابات',accent:'green'};let records=[];
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}$('date').value=today();
 function makeId(){return globalThis.crypto?.randomUUID?.()||String(Date.now())+Math.random()}
@@ -72,7 +72,7 @@ function assignVoucherIds(){
 }
 
 function load(){try{const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');const arr=Array.isArray(raw)?raw:(raw&&Array.isArray(raw.transactions)?raw.transactions:[]);records=arr.filter(r=>r&&typeof r.name==='string'&&Number.isFinite(Number(r.amount??r.price))).map(r=>({...r,id:r.id||makeId(),name:r.name.trim(),type:r.type==='payment'?'payment':'debt',amount:Math.abs(Number(r.amount??r.price)),date:r.date||today(),note:String(r.note||''),mode:r.mode||'none',createdAt:r.createdAt||new Date().toISOString(),currency:r.currency||'AFN',transferId:r.transferId||null,counterAccount:r.counterAccount||'',exchangeSide:r.exchangeSide||'',exchangePeerCurrency:r.exchangePeerCurrency||'',exchangeAccount:r.exchangeAccount||'',exchangeRate:Number(r.exchangeRate)||null,exchangeOperation:r.exchangeOperation==='divide'?'divide':'multiply',exchangeMode:['treasury','none','darak'].includes(r.exchangeMode)?r.exchangeMode:null,cashDirection:r.cashDirection===null||r.cashDirection===undefined?null:Number(r.cashDirection),ledgerDelta:Number.isFinite(r.ledgerDelta)?r.ledgerDelta:null}));}catch(e){records=[]}}
-function save(){if(!window.LICENSE_CAN_WRITE)return false;try{assignVoucherIds();localStorage.setItem(STORAGE_KEY,JSON.stringify(records));return true}catch(e){$('status').textContent='ذخیره‌سازی ناموفق بود؛ فضای مرورگر را بررسی کن.';return false}}
+function save(){if(!window.LICENSE_CAN_WRITE)return false;try{assignVoucherIds();localStorage.setItem(STORAGE_KEY,JSON.stringify(records));window.DH_SYNC?.localChanged();return true}catch(e){$('status').textContent='ذخیره‌سازی ناموفق بود؛ فضای مرورگر را بررسی کن.';return false}}
 function fmt(n){return new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(Number(n)||0)}function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function getCustomers(currencyFilter="AFN"){const map=new Map();for(const a of accounts){const key=a.name.trim().toLocaleLowerCase();map.set(key,{key,name:a.name,debt:0,payment:0,balance:0,count:0})}for(const r of records.filter(r=>(r.currency||"AFN")===currencyFilter)){const key=r.name.trim().toLocaleLowerCase();if(!map.has(key))map.set(key,{key,name:r.name,debt:0,payment:0,balance:0,count:0});const c=map.get(key);const delta=recordDelta(r);if(delta>=0)c.payment+=delta;else c.debt-=delta;c.balance=c.payment-c.debt;c.count++}return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name,'fa'))}
 function balanceAfterEach(source=records){const balances=new Map();return source.map(r=>{const k=r.name.trim().toLocaleLowerCase()+'|'+(r.currency||'AFN'),prev=balances.get(k)||0,bal=prev+recordDelta(r);balances.set(k,bal);return {...r,balance:bal}})}
@@ -263,7 +263,7 @@ function displayDate(date){return settings.calendar==='jalali'?jalali(date):date
 function updateJalaliPreview(){$('jalaliPreview').textContent='تاریخ شمسی: '+jalali($('date').value)}
 $('date').addEventListener('change',updateJalaliPreview);
 function loadMeta(){try{const a=JSON.parse(localStorage.getItem(ACCOUNTS_KEY)||'[]');accounts=Array.isArray(a)?a:[]}catch(e){accounts=[]}try{settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}}catch(e){}}
-function persistMeta(){if(!window.LICENSE_CAN_WRITE)return;localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}
+function persistMeta(){if(!window.LICENSE_CAN_WRITE)return;localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(accounts));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));window.DH_SYNC?.localChanged()}
 function reconcileAccounts(){
  let changed=false;
  for(const n of DEFAULT_ACCOUNTS){
@@ -354,7 +354,7 @@ function setMode(mode){if(!['treasury','none','darak'].includes(mode))mode='none
 document.querySelectorAll('input[name="modeChoice"]').forEach(x=>x.addEventListener('change',()=>setMode(x.value)));
 const palette=['#176b51','#1769ae','#a05b15','#7c3fb4','#ad3b64','#237c88','#925a19','#3e648f'];function currencyColor(code){const i=currencies.indexOf(code);return palette[(i<0?0:i)%palette.length]}
 function setCurrency(code){if(!currencies.includes(code))code='AFN';$('currency').value=code;$('currencyTrigger').textContent=code+' ▾';$('currencyTrigger').style.background=currencyColor(code);$('currencyList').hidden=true;$('currencyTrigger').setAttribute('aria-expanded','false')}
-function saveCurrencies(){if(!window.LICENSE_CAN_WRITE)return;localStorage.setItem(CURRENCIES_KEY,JSON.stringify(currencies))}
+function saveCurrencies(){if(!window.LICENSE_CAN_WRITE)return;localStorage.setItem(CURRENCIES_KEY,JSON.stringify(currencies));window.DH_SYNC?.localChanged()}
 function renderCurrencies(){const curr=$('currency').value,rep=$('reportCurrency').value||'AFN';$('currencyList').innerHTML=currencies.map(c=>`<button type="button" data-cur="${esc(c)}" style="background:${currencyColor(c)}">${esc(c)}</button>`).join('');$('reportCurrency').innerHTML=currencies.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');$('reportCurrency').value=currencies.includes(rep)?rep:'AFN';$('currencyManageList').innerHTML=currencies.map(c=>`<label><span class="currency-token" style="background:${currencyColor(c)}">${esc(c)}</span> ${c==='AFN'?'پیش‌فرض':`<button type="button" data-remove-cur="${esc(c)}" class="danger" style="min-height:30px;padding:4px 8px">حذف</button>`}</label>`).join('');setCurrency(curr);populateExchangeCurrencies()}
 $('currencyTrigger').addEventListener('click',()=>{const list=$('currencyList');list.hidden=!list.hidden;$('currencyTrigger').setAttribute('aria-expanded',String(!list.hidden))});$('currencyList').addEventListener('click',e=>{const b=e.target.closest('[data-cur]');if(b)setCurrency(b.dataset.cur)});
 document.addEventListener('click',e=>{if(!e.target.closest('.currency-picker')){$('currencyList').hidden=true;$('currencyTrigger').setAttribute('aria-expanded','false')}});
@@ -485,10 +485,14 @@ $('exchangeForm').addEventListener('submit',async e=>{e.preventDefault();const f
 $('startClearData').addEventListener('click',()=>{$('clearDataPanel').hidden=false;$('clearDataText').value='';$('confirmClearData').disabled=true;$('clearDataText').focus()});
 $('cancelClearData').addEventListener('click',()=>{$('clearDataPanel').hidden=true;$('clearDataText').value=''});
 $('clearDataText').addEventListener('input',()=>{$('confirmClearData').disabled=$('clearDataText').value.trim()!=='حذف'});
-$('confirmClearData').addEventListener('click',()=>{if($('clearDataText').value.trim()!=='حذف')return;
- if(!confirm('تمام حساب‌ها، معاملات، ارزها و تنظیمات این دستگاه برای همیشه پاک شوند؟'))return;
- try{for(const key of [STORAGE_KEY,ACCOUNTS_KEY,SETTINGS_KEY,CURRENCIES_KEY])localStorage.removeItem(key)}catch(e){alert('حذف اطلاعات ممکن نشد. تنظیمات مرورگر را بررسی کنید.');return}
- location.reload();
+$('confirmClearData').addEventListener('click',async()=>{if($('clearDataText').value.trim()!=='حذف')return;
+ if(!confirm('همهٔ معاملات و حساب‌ها در تمام دستگاه‌های متصل به همین حساب حذف شوند؟ پیش از ادامه پشتیبان بگیرید.'))return;
+ try{
+  if(window.DH_SYNC)await window.DH_SYNC.clearAll();
+  else throw Error('همگام‌سازی فعال نیست؛ برای حذف امن داده‌ها به اینترنت وصل شوید.');
+  for(const key of [STORAGE_KEY,ACCOUNTS_KEY,SETTINGS_KEY,CURRENCIES_KEY])localStorage.removeItem(key);
+  location.reload();
+ }catch(e){alert('حذف انجام نشد: '+e.message)}
 });
 
 
@@ -2063,7 +2067,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
 /* دفتر حسابات 24 — desktop icon sidebar, independent currency state, stable version. */
 (()=>{'use strict';
  const $=id=>document.getElementById(id),C=window.MC14;
- const VERSION='24.1.0';if(!C)return;
+ const VERSION='24.2.0';if(!C)return;
  function version(){if($('appVersion'))$('appVersion').textContent=VERSION;
   const header=$('v14-appbar')?.querySelector('.v14-version');if(header)header.textContent='نسخه ۲۴';
   document.querySelectorAll('#licenseOverlay h2 span').forEach(x=>{if(x.textContent.includes('نسخه'))x.textContent='نسخهٔ ۲۴'});
@@ -2080,7 +2084,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   let toggle=$('v24-sidebar-toggle');if(!toggle){
    toggle=document.createElement('button');toggle.type='button';toggle.id='v24-sidebar-toggle';
    toggle.className='v24-sidebar-toggle';toggle.setAttribute('aria-controls','v14-sidebar');
-   toggle.innerHTML='<span class="v24-sidebar-toggle-icon" aria-hidden="true">☰</span><span class="v24-sidebar-toggle-text">بستن فهرست</span>';
+   toggle.innerHTML='<span class="v24-sidebar-toggle-icon" aria-hidden="true">☰</span>'; 
    side.prepend(toggle);
   }
   let stored=false;try{stored=localStorage.getItem('daftar.v24.sidebar-collapsed')==='1'}catch(e){}
@@ -2088,7 +2092,6 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
    toggle.setAttribute('aria-expanded',String(!closed));toggle.setAttribute('aria-label',closed?'باز کردن فهرست':'بستن فهرست');
    toggle.title=closed?'باز کردن فهرست':'بستن فهرست';
    toggle.querySelector('.v24-sidebar-toggle-icon').textContent=closed?'☰':'❯';
-   toggle.querySelector('.v24-sidebar-toggle-text').textContent=closed?'باز کردن فهرست':'بستن فهرست';
   }
   draw(stored);
   toggle.addEventListener('click',()=>{const closed=!document.body.classList.contains('v24-sidebar-collapsed');draw(closed);
@@ -2120,7 +2123,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
 /* ===== دفتر حسابات v24.1 — readable navigation, peer document, manual/auto sarraf fee ===== */
 (()=>{'use strict';
  const C=window.MC14,$=id=>document.getElementById(id);if(!C)return;
- const VERSION='24.1.0';
+ const VERSION='24.2.0';
  function isSarraf(){const name=$('v13-in-account')?.value.trim();const account=C.accounts.find(a=>a.name===name);return Boolean(account&&(account.category==='صراف'||C.settings.sarrafRules?.[name]));}
  function referenceField(){
   const p='v13-in',form=$(p+'-form');if(!form)return;
@@ -2163,8 +2166,8 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   const manual=input.dataset.v23Manual==='1';field.classList.toggle('v24-fee-manual',manual);
   const status=field.querySelector('.v24-fee-state');if(status)status.textContent=manual?'مبلغ دلخواه (قابل ویرایش)':'محاسبهٔ خودکار';
  }
- function version(){document.title='دفتر حسابات — نسخه ۲۴.۱';if($('appVersion'))$('appVersion').textContent=VERSION;
-  const head=$('v14-appbar')?.querySelector('.v14-version');if(head)head.textContent='نسخه ۲۴.۱';
+ function version(){document.title='دفتر حسابات — نسخه ۲۴.۲';if($('appVersion'))$('appVersion').textContent=VERSION;
+  const head=$('v14-appbar')?.querySelector('.v14-version');if(head)head.textContent='نسخه ۲۴.۲';
  }
  function install(){referenceField();for(const kind of ['in','out'])feeControls(kind);version();
   const account=$('v13-in-account'),form=$('v13-in-form');
@@ -2183,6 +2186,116 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
  }
  try{install()}catch(e){console.error('دفتر حسابات ۲۴.۱:',e)}
 })();
+
+/* ===== دفتر حسابات 24.2 — per-account cloud sync, optimistic concurrency ===== */
+(()=>{'use strict';
+ const $=id=>document.getElementById(id), C=window.MC14;
+ if(!C)return;
+ const TABLE='user_data_snapshots';
+ const defaults={calendar:'jalali',theme:'light',title:'دفتر حسابات',accent:'green'};
+ let client=null,uid=null,base=null,remote=null,started=false,loading=false,sending=false,conflict=false;
+ let timer=null,poller=null,pending=false,activeWrite=false,sessionToken=0;
+ const stateKey=()=>`daftar.sync.base.v24.uid.${uid}`;
+ function readBase(){try{const b=JSON.parse(localStorage.getItem(stateKey())||'null');return b&&Number.isInteger(b.revision)&&typeof b.sig==='string'?b:null}catch{return null}}
+ function storeBase(revision,sig){base={revision,sig};try{localStorage.setItem(stateKey(),JSON.stringify(base))}catch(e){}}
+ function payload(){return {schema:1,records,accounts,currencies,settings}}
+ function signature(p){const s=JSON.stringify(p);let h=2166136261;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),16777619)}return s.length.toString(16)+':'+(h>>>0).toString(16)}
+ function meaningful(p){return !!(p.records?.length||p.accounts?.some(a=>!['خزانه','مصارف','پرداخت نشده'].includes(a.name))||p.currencies?.some(x=>!['AFN','USD','PKR'].includes(x))||Object.keys(defaults).some(k=>JSON.stringify(p.settings?.[k])!==JSON.stringify(defaults[k])))}
+ function status(t,d='',isConflict=false){if($('cloudSyncStatus'))$('cloudSyncStatus').textContent=t;if($('cloudSyncDetail'))$('cloudSyncDetail').textContent=d;if($('cloudSyncConflict'))$('cloudSyncConflict').hidden=!isConflict;}
+ function stop(){sessionToken++;if(timer)clearTimeout(timer);if(poller)clearInterval(poller);timer=null;poller=null;client=null;uid=null;base=null;remote=null;pending=false;started=false;loading=false;sending=false;conflict=false;activeWrite=false;status('در انتظار ورود به حساب...')}
+ function offlineMode(newUid){stop();uid=newUid;status('حالت آفلاین — اطلاعات فقط روی این دستگاه است','پس از اتصال اینترنت وارد حساب شوید تا همگام‌سازی انجام شود.');}
+ function localChanged(){if(!uid||!started||loading)return;pending=true;if(conflict){status('تداخل نسخه‌های ابری و محلی','برای حل تداخل ابتدا از هر دو نسخه پشتیبان بگیرید.',true);return}
+  status('تغییرات در دستگاه ذخیره شد؛ در صف همگام‌سازی است');
+  if(timer)clearTimeout(timer);timer=setTimeout(()=>tick().catch(()=>{}),750);
+ }
+ function useData(p){
+  if(!p||!Array.isArray(p.records)||!Array.isArray(p.accounts)||!Array.isArray(p.currencies)||!p.settings||typeof p.settings!=='object')throw Error('ساختار دادهٔ ابری معتبر نیست.');
+  loading=true;
+  try{
+   // Only the current authenticated user's scoped localStorage keys are changed.
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(p.records));
+   localStorage.setItem(ACCOUNTS_KEY,JSON.stringify(p.accounts));
+   localStorage.setItem(SETTINGS_KEY,JSON.stringify(p.settings));
+   localStorage.setItem(CURRENCIES_KEY,JSON.stringify(p.currencies));
+   records=[];accounts=[];currencies=['AFN','USD','PKR'];settings={...defaults};
+   load();loadMeta();
+   currencies=[...new Set(['AFN',...p.currencies.filter(x=>typeof x==='string'&&/^[A-Z]{2,8}$/.test(x)),...records.map(r=>r.currency||'AFN')])];
+   renderCurrencies();reconcileAccounts();resetExchange();applySettings();render();
+  }finally{loading=false}
+ }
+ async function fetchRemote(){const {data,error}=await client.from(TABLE).select('payload,revision,updated_at').maybeSingle();if(error)throw Error('خواندن از سرور: '+error.message);return data||null}
+ function download(p,name){const b=new Blob([JSON.stringify({app:'DaftarHesabat',exportedAt:new Date().toISOString(),transactions:p.records,accounts:p.accounts,currencies:p.currencies,settings:p.settings},null,2)],{type:'application/json;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${name}-${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+ function backupLocal(){download(payload(),'daftar-local-backup')}
+ function backupCloud(){if(remote?.payload)download(remote.payload,'daftar-cloud-backup');else alert('نسخهٔ ابری موجود نیست.')}
+ async function commit(p,expected){const {data,error}=await client.rpc('save_user_data_snapshot',{expected_user_id:uid,expected_revision:expected,next_payload:p});if(error)throw Error(error.message||'ذخیرهٔ ابری ناموفق بود');const r=Number(data);if(!Number.isInteger(r)||r<=0)throw Error('پاسخ ذخیرهٔ ابری معتبر نیست');return r}
+ function isRevisionConflict(e){return /revision_conflict|40001|conflict/i.test(String(e?.message||e))}
+ function markConflict(r){remote=r;conflict=true;pending=true;status('دو نسخهٔ متفاوت شناسایی شد؛ ذخیرهٔ ابری متوقف است.','برای جلوگیری از حذف معاملات، تصمیم نهایی با شماست.',true)}
+ function checkEditInProgress(){const e=document.activeElement;return !!(e&&e.matches?.('input,textarea,select,[contenteditable="true"]')&&!e.closest('.cloud-sync-panel'))}
+ async function tick(force=false){
+  if(!started||!uid||!client||sending||loading||conflict)return;
+  if(!navigator.onLine){pending=true;status('آفلاین — ذخیره روی همین دستگاه','پس از اتصال اینترنت همگام‌سازی ادامه می‌یابد.');return}
+  sending=true;const token=sessionToken;
+  try{
+   const r=await fetchRemote();if(token!==sessionToken)return;
+   remote=r;
+   const here=payload(),s=signature(here),serverSig=r?.payload?signature(r.payload):null;
+   if(!r){
+    if(!base){if(!meaningful(here)){pending=false;status('حساب ابری آماده است؛ هنوز سندی ثبت نشده');return}
+     if(!window.LICENSE_CAN_WRITE){pending=true;status('اطلاعات محلی در انتظار فعال‌شدن اشتراک است');return}
+     const rev=await commit(here,0);if(token!==sessionToken)return;storeBase(rev,s);pending=false;status('همگام شد ✓','اطلاعات به حساب اختصاصی شما در سرور ارسال شد.');return;}
+    markConflict(r);return;
+   }
+   if(serverSig===s){storeBase(r.revision,s);pending=false;status('همگام شد ✓','آخرین نسخه در همهٔ دستگاه‌ها یکسان است.');return}
+   const localChangedSinceBase=(!base&&meaningful(here))||(base&&s!==base.sig);
+   if(!base){if(!meaningful(here)){useData(r.payload);storeBase(r.revision,signature(payload()));pending=false;status('داده‌ها از ابر دریافت شد ✓');return}markConflict(r);return}
+   if(r.revision===base.revision){
+    if(localChangedSinceBase){
+     if(!window.LICENSE_CAN_WRITE){pending=true;status('تغییرات محلی در انتظار اشتراک فعال');return}
+     try{const rev=await commit(here,base.revision);if(token!==sessionToken)return;storeBase(rev,s);pending=signature(payload())!==s;status(pending?'یک تغییر جدید در صف است':'همگام شد ✓');}
+     catch(e){if(isRevisionConflict(e)){markConflict(await fetchRemote());return}throw e}
+    }else{pending=false;status('همگام شد ✓','همهٔ تغییرات ذخیره شده‌اند.')}
+    return;
+   }
+   if(localChangedSinceBase){markConflict(r);return}
+   if(checkEditInProgress()&&!force){pending=false;status('تغییرات جدید از دستگاه دیگر رسید','پس از پایان ویرایش، همگام‌سازی را بزنید.');return}
+   useData(r.payload);storeBase(r.revision,signature(payload()));pending=false;status('اطلاعات دستگاه دیگر دریافت شد ✓');
+  }catch(e){if(token!==sessionToken)return;pending=true;status('همگام‌سازی موقتاً ناموفق بود',e.message+' — داده‌ها در دستگاه باقی مانده‌اند.')}
+  finally{if(token===sessionToken){sending=false;if(pending&&!conflict&&navigator.onLine&&activeWrite){if(timer)clearTimeout(timer);timer=setTimeout(()=>tick().catch(()=>{}),12000)}}}
+ }
+ async function start(newUid,newClient){
+  stop();uid=newUid;client=newClient;sessionToken++;const token=sessionToken;
+  base=readBase();started=true;loading=false;activeWrite=false;status('در حال دریافت اطلاعات حساب از ابر...');
+  try{await tick(true)}catch(e){status('اتصال به اطلاعات ابری ناموفق بود',e.message)}
+  if(token!==sessionToken)return;
+  poller=setInterval(()=>{if(!document.hidden)tick().catch(()=>{})},20000);
+ }
+ function authorized(){if(!uid||!started)return;activeWrite=window.LICENSE_CAN_WRITE===true;if(pending&&activeWrite&&!conflict)tick().catch(()=>{})}
+ async function receiveCloud(){if(!conflict||!remote?.payload)return;if(!confirm('اطلاعات ابری جایگزین داده‌های فعلی این دستگاه شوند؟ ابتدا از داده‌های همین دستگاه نسخهٔ پشتیبان گرفته می‌شود.'))return;
+  backupLocal();const r=await fetchRemote();if(!r||r.revision!==remote.revision){markConflict(r);alert('نسخهٔ ابری دوباره تغییر کرده؛ لطفاً مجدداً بررسی کنید.');return}
+  useData(r.payload);storeBase(r.revision,signature(payload()));remote=r;pending=false;conflict=false;status('نسخهٔ ابری دریافت شد ✓');
+ }
+ async function sendLocal(){if(!conflict||!window.LICENSE_CAN_WRITE)throw Error('برای ارسال اطلاعات، اشتراک فعال لازم است.');
+  if(!confirm('اطلاعات این دستگاه به‌جای آخرین نسخهٔ سرور نوشته شود؟ قبل از تغییر، نسخهٔ ابری دانلود خواهد شد. این کار می‌تواند تغییرات دستگاه دیگر را برگرداند.'))return;
+  backupCloud();const snap=payload(),s=signature(snap);
+  let rev;try{rev=await commit(snap,remote?.revision||0)}catch(e){if(isRevisionConflict(e)){markConflict(await fetchRemote());throw Error('نسخهٔ سرور دوباره تغییر کرده است؛ دوباره بررسی کنید.')}throw e}
+  storeBase(rev,s);pending=false;conflict=false;remote={revision:rev,payload:snap};status('اطلاعات این دستگاه در سرور ذخیره شد ✓');
+ }
+ async function clearAll(){if(!uid||!client||!started||conflict||!navigator.onLine)throw Error('حذف سراسری فقط پس از همگام‌سازی و اتصال اینترنت ممکن است.');
+  await tick(true);if(conflict||pending)throw Error('ابتدا تداخل یا تغییرات همگام‌نشده را برطرف کنید.');
+  const empty={schema:1,records:[],accounts:[],currencies:['AFN','USD','PKR'],settings:{...defaults}};
+  const r=await commit(empty,base?.revision||0);storeBase(r,signature(empty));remote={revision:r,payload:empty};pending=false;status('حذف ابری انجام شد.');
+ }
+ $('cloudSyncNow')?.addEventListener('click',()=>tick(true).catch(e=>status('خطای همگام‌سازی',e.message)));
+ $('cloudSyncBackupLocal')?.addEventListener('click',backupLocal);
+ $('cloudSyncBackupCloud')?.addEventListener('click',backupCloud);
+ $('cloudSyncUseCloud')?.addEventListener('click',()=>receiveCloud().catch(e=>alert(e.message)));
+ $('cloudSyncUseLocal')?.addEventListener('click',()=>sendLocal().catch(e=>alert(e.message)));
+ window.addEventListener('online',()=>tick(true).catch(()=>{}));
+ window.addEventListener('focus',()=>tick().catch(()=>{}));
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick().catch(()=>{})});
+ window.DH_SYNC={start,stop,offlineMode,localChanged,authorized,tick,clearAll,backupLocal,debug:()=>({uid,base,started,loading,pending,conflict,remoteRev:remote?.revision})};
+})();
+
 
 /* ===== Supabase license client (previously deferred) ===== */
 
@@ -2214,7 +2327,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
    settingsInfo.textContent=active?'آفلاین · دسترسی موقت تا اتصال بعدی':'آفلاین · فقط مشاهده و پشتیبان‌گیری';
    if($('licenseStatusText'))$('licenseStatusText').textContent=settingsInfo.textContent;
    statusBox.hidden=false;authArea.hidden=true;adminPanel.hidden=true;
-   allowApp(active);return true;
+   allowApp(active);window.DH_SYNC?.offlineMode(c.userId);return true;
   }
  const tell=(t,bad=false)=>{message.textContent=t;message.classList.toggle('lic-error',bad)};
  function showOverlay(){node.hidden=false;document.body.classList.remove('license-authorized')}
@@ -2258,13 +2371,27 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   if(mode==='signup'&&!result.data.session){tell('حساب ساخته شد. ایمیل تأیید را بررسی و سپس وارد شوید.');return}
   await onSession(result.data.session);
  }
+ let setupSessionPromise=null,setupSessionUser=null;
  async function onSession(session){
-  if(!session?.user){if(!navigator.onLine&&tryOffline())return;resetApp();return}
-  if(userId!==session.user.id){userId=session.user.id;
-   // Per-user namespaced local data. Legacy migration is opt-in and owner-bound.
-   if(typeof window.licenseSwitchUser==='function')window.licenseSwitchUser(userId);
+  if(!session?.user){
+   if(!navigator.onLine&&tryOffline())return;
+   window.DH_SYNC?.stop();setupSessionUser=null;setupSessionPromise=null;resetApp();return;
   }
+  const uid=session.user.id;
+  if(setupSessionUser!==uid){
+   setupSessionUser=uid;
+   setupSessionPromise=(async()=>{
+    window.LICENSE_CAN_WRITE=false;
+    userId=uid;
+    // Never load another user's records or sync under the previous session.
+    window.DH_SYNC?.stop();
+    if(typeof window.licenseSwitchUser==='function')window.licenseSwitchUser(uid);
+    await window.DH_SYNC?.start(uid,client);
+   })();
+  }
+  await setupSessionPromise;
   await refreshStatus(true);
+  window.DH_SYNC?.authorized();
  }
  async function redeem(field){const code=field.value.trim();if(!code){tell('کلید را وارد کنید.',true);return}
   tell('در حال فعال‌سازی...');try{await request('activate',{code});field.value='';tell('فعال‌سازی انجام شد.');await refreshStatus(true)}catch(e){tell(e.message,true)}
@@ -2284,7 +2411,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
  }
  $('licenseSignIn').addEventListener('click',()=>login('signin').catch(e=>tell(e.message,true)));
  $('licenseSignUp').addEventListener('click',()=>login('signup').catch(e=>tell(e.message,true)));
- $('licenseLogout').addEventListener('click',async()=>{try{if(client)await client.auth.signOut()}catch(e){}localStorage.removeItem(OFFLINE_KEY);resetApp()});
+ $('licenseLogout').addEventListener('click',async()=>{try{if(client)await client.auth.signOut()}catch(e){}localStorage.removeItem(OFFLINE_KEY);window.DH_SYNC?.stop();setupSessionUser=null;setupSessionPromise=null;resetApp()});
  $('licenseActivate').addEventListener('click',()=>redeem($('licenseKey')));
  $('licenseSettingsActivate').addEventListener('click',()=>redeem($('licenseSettingsKey')));
  $('licenseReadonlyBtn').addEventListener('click',()=>{allowApp(false);document.body.classList.add('license-readonly');});

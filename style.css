@@ -854,3 +854,27 @@ body.v17-editor-open{overflow:hidden}
 .v24-fee-manual .v24-fee-state{color:#116c86;font-weight:800}
 .v24-fee-recalc{width:auto!important;min-height:27px!important;height:auto!important;display:inline-flex!important;align-items:center!important;font-size:11px!important;font-weight:800!important;border-radius:8px!important;border:1px solid #accfdc!important;background:#eff8fa!important;color:#0e708b!important;padding:3px 9px!important;cursor:pointer}
 .v24-fee-recalc:hover{background:#daf1f7!important}
+
+
+/* v24.2 — restore compact v14 navigation labels; icon-only collapse button. */
+@media(min-width:1101px){
+ #v14-sidebar,body.v15-ready #v14-sidebar{width:220px!important}
+ body.v15-ready main{margin-right:226px!important}
+ body.v24-sidebar-collapsed.v15-ready main{margin-right:75px!important}
+}
+#v14-sidebar button[data-v14-page]{font-size:13px!important;font-weight:500!important;line-height:1.5!important;min-height:46px!important;padding:9px 13px!important;gap:12px!important}
+#v14-sidebar button.selected[data-v14-page]{font-weight:800!important}
+#v14-sidebar button .v24-nav-icon{width:22px!important;flex:0 0 22px!important;font-size:21px!important}
+#v14-sidebar button .v24-nav-text{display:inline!important;flex:1 1 auto!important;min-width:0!important;font-size:13px!important;font-weight:inherit!important;line-height:1.5!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#v14-sidebar #v24-sidebar-toggle{width:34px!important;min-width:34px!important;height:32px!important;min-height:32px!important;padding:3px!important;margin:0 6px 7px 0!important;align-self:flex-start!important;display:flex!important;align-items:center!important;justify-content:center!important}
+#v14-sidebar #v24-sidebar-toggle .v24-sidebar-toggle-icon{font-size:17px!important;line-height:1!important;width:auto!important}
+@media(min-width:1101px){body.v24-sidebar-collapsed #v14-sidebar button .v24-nav-text{display:none!important}body.v24-sidebar-collapsed #v14-sidebar [data-v14-page]{justify-content:center!important;padding:8px 4px!important}}
+@media(max-width:1100px){#v14-sidebar #v24-sidebar-toggle{display:none!important}}
+.cloud-sync-panel{border:1px solid #c9e0e8;border-radius:13px;padding:16px;background:linear-gradient(135deg,#f5fbff,#fff)}
+.cloud-sync-panel .cloud-sync-status{font-size:13px;font-weight:700;color:#28647c;line-height:1.8;margin:9px 0}
+.cloud-sync-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.cloud-sync-actions button{width:auto;min-height:35px;padding:7px 11px;font-size:12px}
+.cloud-sync-conflict{padding:11px;border:1px solid #efc382;border-radius:10px;background:#fff8e9;font-size:12px;line-height:1.8}
+.cloud-sync-conflict[hidden]{display:none!important}
+body.dark .cloud-sync-panel{background:#193546;border-color:#466274}
+body.dark .cloud-sync-conflict{background:#463625;color:#faf5e9}
