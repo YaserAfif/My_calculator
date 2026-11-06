@@ -1,7 +1,7 @@
 /* دفتر حسابات v24 — single-file JavaScript bundle. Keep the original execution order. */
 if (typeof document === 'undefined') {
 /* ===== PWA service worker (runs only in service-worker context) ===== */
-const CACHE_NAME = 'mycalc-v24-consolidated-assets-v1';
+const CACHE_NAME = 'mycalc-v24-1-consolidated-assets-v2';
 const ASSETS = ['./','./index.html','./app.js','./style.css','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon.svg'];
 self.addEventListener('install', event => {event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>(k.startsWith('mycalc-v13-preview-')||k.startsWith('mycalc-v14-')||k.startsWith('mycalc-v15-')||k.startsWith('mycalc-v16-')||k.startsWith('mycalc-v17-')||k.startsWith('mycalc-v18-')||k.startsWith('mycalc-v19-')||k.startsWith('mycalc-v20-')||k.startsWith('mycalc-v21-')||k.startsWith('mycalc-v22-')||k.startsWith('mycalc-v23-')||k.startsWith('mycalc-v24-'))&&k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
@@ -38,7 +38,7 @@ function positionFloatingMenu(){const vv=window.visualViewport;if(!vv)return;con
 if(window.visualViewport){window.visualViewport.addEventListener('resize',positionFloatingMenu);window.visualViewport.addEventListener('scroll',positionFloatingMenu)}window.addEventListener('resize',positionFloatingMenu);positionFloatingMenu();
 function resetAmountFields(){ $('gotAmount').value='';$('talabAmount').value='';syncAmountFields(); }
 for(const id of ['gotAmount','talabAmount']){const el=$(id);el.addEventListener('input',()=>syncAmountFields());el.addEventListener('focus',()=>syncAmountFields());el.addEventListener('blur',()=>setTimeout(()=>syncAmountFields(),0));}
-const APP_VERSION='24.0.0';const DEFAULT_ACCOUNTS=['خزانه','مصارف','پرداخت نشده'];
+const APP_VERSION='24.1.0';const DEFAULT_ACCOUNTS=['خزانه','مصارف','پرداخت نشده'];
 let CURRENCIES_KEY='hesabket.currencies.v8';let currencies=['AFN','USD','PKR'];let STORAGE_KEY='hesabket.records.v1', ACCOUNTS_KEY='hesabket.accounts.v3', SETTINGS_KEY='hesabket.settings.v3';let accounts=[],settings={calendar:'jalali',theme:'light',title:'دفتر حسابات',accent:'green'};let records=[];
 function today(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}$('date').value=today();
 function makeId(){return globalThis.crypto?.randomUUID?.()||String(Date.now())+Math.random()}
@@ -636,9 +636,9 @@ function hawalaCalculate(kind,source){
  if(!(rate>0))return;
  const op=opInput.value;
  if(source==='converted'||(source==='rate'&&sourceField==='converted')||((source==='operation'||source==='currency')&&sourceField==='converted')){
-  if(converted>0)set(from,op==='multiply'?converted/rate:converted*rate);
+  if(converted>0)set(from,op==='multiply'?converted/rate:converted*rate);else if(source==='converted'&&!to.value.trim())from.value='';
  }else if(source==='amount'||source==='rate'||source==='operation'||source==='currency'){
-  if(amount>0)set(to,op==='multiply'?amount*rate:amount/rate);
+  if(amount>0)set(to,op==='multiply'?amount*rate:amount/rate);else if(source==='amount'&&!from.value.trim())to.value='';
  }
 }
 function resetHawala(kind){const p=`v13-${kind}`;$(p+'-form').reset();$(p+'-rate').value='1';$(p+'-date').value=today();$(p+'-account').value=state.account||'';$(p+'-converted').value='';if($(p+'-sarraf-fee'))$(p+'-sarraf-fee').value='0';if($(p+'-sarraf-fee-currency'))$(p+'-sarraf-fee-currency').value=$(p+'-fee-currency').value;$(p+'-status').textContent='';$(p+'-darak-wrap').hidden=true;state.hwEdit='';document.querySelector('#'+p+'-form button[type="submit"]').textContent='ثبت '+methods[kind];}
@@ -685,7 +685,7 @@ async function addHawala(kind){const p=`v13-${kind}`,account=$(p+'-account').val
  if(!save()){records=prev;accounts=oldAccounts;$(p+'-status').textContent='خطا در ذخیره سند حواله';return}persistMeta();reconcileAccounts();render();window.MC14?.afterHawalaSave?.({kind,account,doc,editing:!!editing});$(p+'-form').reset();resetHawala(kind);window.MC20?.syncNumbers?.(kind);$(p+'-status').textContent=`${methods[kind]} با شماره ${doc} ${editing?'ویرایش':'ثبت'} شد.`;
 }
 function editLedgerRecord(id){const r=records.find(x=>String(x.id)===String(id));if(!r)return;if(r.mode==='hawala'){if(r.hawalaRole==='fee-profit')return alert('برای ویرایش، سند اصلی حواله را انتخاب کنید.');const p='v13-'+r.hawalaKind;openHawala(r.hawalaKind);state.hwEdit=r.transferId;const primary=records.find(x=>x.transferId===r.transferId&&x.hawalaRole==='principal');const cash=records.find(x=>x.transferId===r.transferId&&x.hawalaRole==='settlement');if(!primary||!cash)return alert('حواله دارای سند ناقص است؛ ویرایش متوقف شد.');
- $(p+'-account').value=primary.name;if($(p+'-number'))$(p+'-number').value=primary.documentNo||'';$(p+'-amount').value=formatAmountTyping(String(primary.amount));$(p+'-currency').value=primary.currency;$(p+'-converted').value=formatAmountTyping(String(cash.amount));$(p+'-converted-currency').value=cash.currency;$(p+'-rate').value=String(primary.hawalaRate||1);$(p+'-operation').value=primary.hawalaOperation||'multiply';$(p+'-fee').value=formatAmountTyping(String(primary.hawalaFee||0));$(p+'-fee-currency').value=primary.hawalaFeeCurrency||primary.currency;$(p+'-date').value=primary.date;$(p+'-note').value=primary.note||'';for(const [field,value] of [['sender',primary.senderName],['receiver',primary.receiverName],['tracking',primary.trackingRef],['source',primary.hawalaSource]])if($(p+'-'+field))$(p+'-'+field).value=value||'';let mode=primary.hawalaMethod||'treasury';document.querySelector(`[name="${p}-mode"][value="${mode}"]`).checked=true;$(p+'-darak-wrap').hidden=mode!=='darak';if(mode==='darak')$(p+'-darak').value=cash.name;if($(p+'-sarraf-fee'))$(p+'-sarraf-fee').value=String(primary.hawalaSarrafFee||0);if($(p+'-sarraf-fee-currency'))$(p+'-sarraf-fee-currency').value=primary.hawalaSarrafFeeCurrency||primary.hawalaFeeCurrency||primary.currency;document.querySelector('#'+p+'-form button[type="submit"]').textContent='ذخیره تغییرات حواله';return;
+ $(p+'-account').value=primary.name;if($(p+'-number'))$(p+'-number').value=primary.documentNo||'';$(p+'-amount').value=formatAmountTyping(String(primary.amount));$(p+'-currency').value=primary.currency;$(p+'-converted').value=formatAmountTyping(String(cash.amount));$(p+'-converted-currency').value=cash.currency;$(p+'-rate').value=String(primary.hawalaRate||1);$(p+'-operation').value=primary.hawalaOperation||'multiply';$(p+'-fee').value=formatAmountTyping(String(primary.hawalaFee||0));$(p+'-fee-currency').value=primary.hawalaFeeCurrency||primary.currency;$(p+'-date').value=primary.date;$(p+'-note').value=primary.note||'';for(const [field,value] of [['sender',primary.senderName],['receiver',primary.receiverName],['tracking',primary.trackingRef],['source',primary.hawalaSource]])if($(p+'-'+field))$(p+'-'+field).value=value||'';let mode=primary.hawalaMethod||'treasury';document.querySelector(`[name="${p}-mode"][value="${mode}"]`).checked=true;$(p+'-darak-wrap').hidden=mode!=='darak';if(mode==='darak')$(p+'-darak').value=cash.name;if($(p+'-sarraf-fee'))$(p+'-sarraf-fee').value=String(primary.hawalaSarrafFee||0);if($(p+'-sarraf-fee-currency'))$(p+'-sarraf-fee-currency').value=primary.hawalaSarrafFeeCurrency||primary.hawalaFeeCurrency||primary.currency;if($(p+'-peer-out-number'))$(p+'-peer-out-number').value=primary.hawalaPeerOutgoingNo||'';if($(p+'-sarraf-fee'))$(p+'-sarraf-fee').dataset.v23Manual='1';document.querySelector('#'+p+'-form button[type="submit"]').textContent='ذخیره تغییرات حواله';return;
  }if(r.mode==='exchange'){openExchangeForEdit(r);return}
  showPage('journal');$('editId').value=r.id;$('name').value=r.name;populateDarakAccounts();resetAmountFields();$(r.type==='payment'?'talabAmount':'gotAmount').value=formatAmountTyping(String(r.amount));syncAmountFields();$('date').value=r.date;setMode(r.mode||'none');if(r.mode==='darak')$('darakAccount').value=r.counterAccount||'';setCurrency(r.currency||'AFN');$('note').value=r.note||'';updateJalaliPreview();syncAccountCombos();$('editingNote').style.display='block';$('submitEntry').textContent='ذخیره تغییرات';$('cancelEdit').style.display='block';}
 function deleteLedgerRecord(id){const r=records.find(x=>String(x.id)===String(id));if(!r)return;if(!window.LICENSE_CAN_WRITE)return alert('برای حذف، اشتراک باید فعال باشد.');const groupId=r.transferId;if(r.mode==='hawala'&&records.some(x=>x.mode==='hawala-settlement'&&x.originalHawalaId===groupId)){alert('این حواله قبلاً پرداخت قسمی/کامل دارد. حذف اصل حواله تا برگشت سندهای پرداخت مجاز نیست.');return}const msg=groupId?'همه اسناد مرتبط این حواله/انتقال حذف شوند؟':'این سند حذف شود؟';if(!confirm(msg))return;const old=records;records=records.filter(x=>groupId?x.transferId!==groupId:x.id!==r.id);if(!save())records=old;else render();}
@@ -879,7 +879,7 @@ C.beforeHawalaSave=function({kind,account,amount,cur,converted,targetCur,fee,fee
  if(previouslyPaid>0){const original=previous.find(x=>x.hawalaRole==='settlement');if(original&&(original.name!==('پرداخت نشده')||original.currency!==targetCur||converted+0.00001<previouslyPaid)){alert('این حواله پرداخت ثبت‌شده دارد؛ نوع حساب، ارز یا مقدار مبادله را نمی‌توان به کمتر از مجموع پرداخت‌ها تغییر داد.');return false}}
  // Other accounts may have negative balances. Only physical treasury movements are checked at write time.
  return true};
-C.hawalaMetadata=function(kind){const prefix='v13-'+kind;return {senderName:$(prefix+'-sender')?.value?.trim()||'',receiverName:$(prefix+'-receiver')?.value?.trim()||'',hawalaSource:$(prefix+'-source')?.value?.trim()||''}};
+C.hawalaMetadata=function(kind){const prefix='v13-'+kind;return {senderName:$(prefix+'-sender')?.value?.trim()||'',receiverName:$(prefix+'-receiver')?.value?.trim()||'',hawalaSource:$(prefix+'-source')?.value?.trim()||'',hawalaPeerOutgoingNo:kind==='in'?($(prefix+'-peer-out-number')?.value?.trim()||'').slice(0,80):''}};
 function hawalaEnhance(){for(const kind of ['in','out']){const p='v13-'+kind,form=$(p+'-form');if(!form||$(p+'-sender'))continue;
 const note=$(p+'-note').closest('.field');note.insertAdjacentHTML('beforebegin',`<div class="field"><label>فرستنده</label><input id="${p}-sender" placeholder="نام فرستنده" maxlength="100"/></div><div class="field"><label>گیرنده</label><input id="${p}-receiver" placeholder="نام گیرنده" maxlength="100"/></div>`);
 
@@ -957,7 +957,7 @@ function voucherView(r){
  const route=settlement?`<div class="v19-doc-route"><strong>${S(primary.name)}</strong><i aria-hidden="true">⇄</i><strong>${S(settlement.name)}</strong><span>· یک سند، یک مبلغ اصلی</span></div>`:'';
  const badSame=single&&Math.abs(otherAmount-faceAmount)>0.00001?'<p class="v19-doc-note" style="border-color:#cc4d5e">⚠️ این سند قدیمی اختلاف مبلغ در ارز یکسان دارد؛ قبل از استفادهٔ مالی باید بررسی و اصلاح شود.</p>':'';
  const rates=settlement&&faceCur!==otherCur?field('نرخ / عملیه',`${primary.hawalaOperation==='divide'?'تقسیم':'ضرب'} · ${primary.hawalaRate||primary.exchangeRate||'—'}`):'';
- const details=`<div class="v19-document"><div class="v19-doc-hero"><span class="v19-doc-tag">${S(typeText(primary))} · ${S(state)}</span><div><small>مبلغ اصلی سند</small><div class="v19-doc-main">${S(fmt(faceAmount))} ${S(faceCur)}</div></div><small>شماره سند ${S(doc)} · تاریخ ${S(C.dateText(primary.date))}</small></div>${route}<div class="v19-doc-fields">${field('نام حساب',primary.name)}${field('شماره آی‌دی',doc)}${field('تاریخ',C.dateText(primary.date))}${!isCash&&primary.documentNo?field('نمبر حواله',primary.documentNo):''}${total}${rates}${!isCash&&primary.senderName?field('فرستنده',primary.senderName):''}${!isCash&&primary.receiverName?field('گیرنده',primary.receiverName):''}${!isCash&&primary.trackingRef?field('مرجع',primary.trackingRef):''}${ownFee?field('مفاد حواله',`${fmt(ownFee)} ${primary.hawalaFeeCurrency||faceCur}`):''}${primary.hawalaSarrafFee?field('مفاد صراف',`${fmt(primary.hawalaSarrafFee)} ${primary.hawalaSarrafFeeCurrency||primary.hawalaFeeCurrency||faceCur}`):''}${isHawala&&settlement?.name==='پرداخت نشده'?field('پرداخت‌شده / مانده',`${fmt(paid)} / ${fmt(Math.max(0,otherAmount-paid))} ${otherCur}`):''}</div>${primary.note?`<div class="v19-doc-note"><b>تشریحات:</b> ${S(primary.note)}</div>`:''}${badSame}</div>`;
+ const details=`<div class="v19-document"><div class="v19-doc-hero"><span class="v19-doc-tag">${S(typeText(primary))} · ${S(state)}</span><div><small>مبلغ اصلی سند</small><div class="v19-doc-main">${S(fmt(faceAmount))} ${S(faceCur)}</div></div><small>شماره سند ${S(doc)} · تاریخ ${S(C.dateText(primary.date))}</small></div>${route}<div class="v19-doc-fields">${field('نام حساب',primary.name)}${field('شماره آی‌دی',doc)}${field('تاریخ',C.dateText(primary.date))}${!isCash&&primary.documentNo?field('نمبر حواله',primary.documentNo):''}${isHawala&&primary.hawalaKind==='in'&&primary.hawalaPeerOutgoingNo?field('شماره حواله صادره صراف',primary.hawalaPeerOutgoingNo):''}${total}${rates}${!isCash&&primary.senderName?field('فرستنده',primary.senderName):''}${!isCash&&primary.receiverName?field('گیرنده',primary.receiverName):''}${!isCash&&primary.trackingRef?field('مرجع',primary.trackingRef):''}${ownFee?field('مفاد حواله',`${fmt(ownFee)} ${primary.hawalaFeeCurrency||faceCur}`):''}${primary.hawalaSarrafFee?field('مفاد صراف',`${fmt(primary.hawalaSarrafFee)} ${primary.hawalaSarrafFeeCurrency||primary.hawalaFeeCurrency||faceCur}`):''}${isHawala&&settlement?.name==='پرداخت نشده'?field('پرداخت‌شده / مانده',`${fmt(paid)} / ${fmt(Math.max(0,otherAmount-paid))} ${otherCur}`):''}</div>${primary.note?`<div class="v19-doc-note"><b>تشریحات:</b> ${S(primary.note)}</div>`:''}${badSame}</div>`;
  const auditRows=group.map(x=>`<tr><td>${S(x.name)}</td><td>${money(x.amount,currency(x))}</td><td>${S(labelSide(x))}</td><td>${S(x.hawalaRole||x.mode||'—')}</td></tr>`).join('');
  const audit=`<details class="v19-doc-audit"><summary>جزئیات داخلی حسابداری (برای بررسی؛ در چاپ مشتری نمایش داده نمی‌شود)</summary><div class="v15-scroll"><table class="v15-table"><thead><tr><th>حساب</th><th>مقدار</th><th>اثر</th><th>بخش داخلی</th></tr></thead><tbody>${auditRows}</tbody></table></div></details>`;
  return {doc,title:typeText(primary),html:details+audit,print:details};
@@ -1037,7 +1037,7 @@ function printHtml(title,body,isReceipt=false){
 }
 function tableExtras(){const detail=$('v13-detail-body');if(!detail)return;detail.querySelectorAll('tr').forEach(row=>{if(row.querySelector('[data-v15-view]'))return;const id=row.dataset.v17Id||row.querySelector('[data-v13-edit]')?.dataset.v13Edit||row.querySelector('[data-v13-delete]')?.dataset.v13Delete;if(!id)return;const cell=row.lastElementChild;if(cell)cell.insertAdjacentHTML('afterbegin',`<button type="button" class="v15-view-link" data-v15-view="${S(id)}">جزئیات سند</button>`)});const info=$('v15-detail-extras');if(info&&!info.dataset.init){info.dataset.init='1';info.innerHTML='<p class="v15-note">روی «جزئیات سند» بزن تا تمام ثبت‌های مرتبط با حواله، مفاد یا تبادله دیده شوند.</p>'}}
 // Report source is always the same canonical ledger; sorting/filtering DOES NOT recalculate historical closing balances.
-function readReport(){const account=C.state.reportAccount,cur=C.state.reportCurrency,from=C.state.reportFrom,to=C.state.reportTo,query=normalize($('v14-report-search')?.value),type=$('v14-report-type')?.value||'',order=$('v14-report-order')?.value||'date';if(!account)return[];let all=C.ledger(C.accountSource(account)).filter(r=>(!cur||currency(r)===cur)&&(!from||r.date>=from)&&(!to||r.date<=to));all=all.filter(r=>(!query||normalize([r.note,r.documentNo,r.senderName,r.receiverName,r.name,r.trackingRef,r.hawalaSource,r.externalId,r.importFile].join(' ')).includes(query))&&(!type||(type==='journal'?(!['hawala','exchange','hawala-settlement'].includes(r.mode)):r.mode===type)));if(order==='incoming')all=all.filter(r=>r.hawalaKind==='in');if(order==='outgoing')all=all.filter(r=>r.hawalaKind==='out');if(order==='id')all.sort((a,b)=>String(b.documentNo||b.id).localeCompare(String(a.documentNo||a.id),undefined,{numeric:true}));else all.reverse();return all;}
+function readReport(){const account=C.state.reportAccount,cur=C.state.reportCurrency,from=C.state.reportFrom,to=C.state.reportTo,query=normalize($('v14-report-search')?.value),type=$('v14-report-type')?.value||'',order=$('v14-report-order')?.value||'date';if(!account)return[];let all=C.ledger(C.accountSource(account)).filter(r=>(!cur||currency(r)===cur)&&(!from||r.date>=from)&&(!to||r.date<=to));all=all.filter(r=>(!query||normalize([r.note,r.documentNo,r.senderName,r.receiverName,r.name,r.trackingRef,r.hawalaSource,r.hawalaPeerOutgoingNo,r.externalId,r.importFile].join(' ')).includes(query))&&(!type||(type==='journal'?(!['hawala','exchange','hawala-settlement'].includes(r.mode)):r.mode===type)));if(order==='incoming')all=all.filter(r=>r.hawalaKind==='in');if(order==='outgoing')all=all.filter(r=>r.hawalaKind==='out');if(order==='id')all.sort((a,b)=>String(b.documentNo||b.id).localeCompare(String(a.documentNo||a.id),undefined,{numeric:true}));else all.reverse();return all;}
 function totals(rows){const map=new Map();for(const r of rows){const c=currency(r);const o=map.get(c)||{got:0,talab:0,delta:0};if(r.type==='debt')o.got+=Number(r.amount);else o.talab+=Number(r.amount);o.delta+=sign(r);map.set(c,o)}return map}
 function makeReports(){const host=$('v13-report-card');if(!host||$('v15-report'))return;host.insertAdjacentHTML('beforeend',`<section id="v15-report"><div class="v15-report-head"><div><h3>دفتر معاملات و راپور پیشرفته</h3><p class="v15-note">گرفت، طلب و ماندهٔ واقعی هر ارز پس از هر سند؛ فیلترها روی چاپ و Excel نیز اعمال می‌شوند.</p></div><div class="v15-actions"><button type="button" class="v15-button" id="v15-report-pdf">چاپ / PDF</button><button type="button" class="v15-button ghost" id="v15-report-xlsx">Excel</button></div></div><div id="v15-report-totals" class="v15-report-totals"></div><div class="v15-scroll"><table class="v15-table" id="v15-report-table"><thead><tr><th>تاریخ</th><th>آی‌دی</th><th>تشریحات</th><th>گرفت</th><th>طلب</th><th>مانده حساب</th><th>نوع</th><th>عمل</th></tr></thead><tbody id="v15-report-body"></tbody></table></div><div class="v15-pager"><button type="button" data-v15-prev>قبلی</button><span id="v15-report-count"></span><button type="button" data-v15-next>بعدی</button><select id="v15-report-size" aria-label="تعداد سطر"><option value="20">۲۰ سطر</option><option value="50" selected>۵۰ سطر</option></select></div></section>`);
 const render=()=>renderReport();for(const id of ['v13-report-account','v13-report-currency','v13-report-from','v13-report-to','v14-report-search','v14-report-type','v14-report-order'])$(id)?.addEventListener('input',()=>{reportPage=1;render()});$('v15-report-size').addEventListener('change',()=>{reportPage=1;render()});
@@ -1077,7 +1077,7 @@ function addHawalaActions(){for(const type of ['in','out']){const form=$('v13-'+
 const DAILY_PAGES={journal:{element:'page-journal',title:'معاملات روزنامچه',filter:r=>!['hawala','exchange','hawala-settlement'].includes(r.mode)},exchange:{element:'page-exchange',title:'تبادلات ثبت‌شده',filter:r=>r.mode==='exchange'},hawalaIn:{element:'page-hawalaIn',title:'حواله‌های وارده',filter:r=>r.mode==='hawala'&&r.hawalaKind==='in'&&r.hawalaRole==='principal'},hawalaOut:{element:'page-hawalaOut',title:'حواله‌های صادره',filter:r=>r.mode==='hawala'&&r.hawalaKind==='out'&&r.hawalaRole==='principal'}};
 const dailyState=Object.fromEntries(Object.keys(DAILY_PAGES).map(k=>[k,{search:'',range:'today',page:1,size:30}]));
 function isDay(r,range){if(range==='all')return true;const today=C.today();if(range==='today')return r.date===today;if(range==='week')return r.date>=new Date(Date.now()-6*864e5).toISOString().slice(0,10);return true}
-function dailyRows(type){const cfg=DAILY_PAGES[type],s=dailyState[type],seen=new Set();let rows=C.records.filter(cfg.filter).filter(r=>{if(type==='journal')return true;if(r.transferId){const key=r.transferId;if(seen.has(key))return false;seen.add(key)}return true});const q=normalize(s.search);return rows.filter(r=>isDay(r,s.range)&&(!q||normalize([r.name,r.note,r.documentNo,r.senderName,r.receiverName,r.trackingRef,r.hawalaSource].join(' ')).includes(q))).reverse()}
+function dailyRows(type){const cfg=DAILY_PAGES[type],s=dailyState[type],seen=new Set();let rows=C.records.filter(cfg.filter).filter(r=>{if(type==='journal')return true;if(r.transferId){const key=r.transferId;if(seen.has(key))return false;seen.add(key)}return true});const q=normalize(s.search);return rows.filter(r=>isDay(r,s.range)&&(!q||normalize([r.name,r.note,r.documentNo,r.senderName,r.receiverName,r.trackingRef,r.hawalaSource,r.hawalaPeerOutgoingNo].join(' ')).includes(q))).reverse()}
 function dailyTables(){for(const [type,config]of Object.entries(DAILY_PAGES)){const page=$(config.element);if(!page)continue;let node=$('v15-daily-'+type);if(!node){node=document.createElement('section');node.id='v15-daily-'+type;node.className='v15-daily v14-panel';page.append(node);node.addEventListener('input',e=>{const b=e.target;if(b.matches('[data-v15-daily-query]')){dailyState[type].search=b.value;dailyState[type].page=1;renderDaily(type,true)}if(b.matches('[data-v15-daily-range]')){dailyState[type].range=b.value;dailyState[type].page=1;renderDaily(type,true)}if(b.matches('[data-v15-daily-size]')){dailyState[type].size=Number(b.value);dailyState[type].page=1;renderDaily(type,true)}});node.addEventListener('click',e=>{const b=e.target.closest('[data-v15-voucher],[data-v15-daily-prev],[data-v15-daily-next]');if(!b)return;if(b.hasAttribute('data-v15-voucher'))openVoucher(b.dataset.v15Voucher);else {dailyState[type].page+=b.hasAttribute('data-v15-daily-prev')?-1:1;renderDaily(type,true)}})}renderDaily(type,false)}}
 function dailyBadge(r){const kind=r.hawalaKind||'';if(r.mode!=='hawala')return '<span class="v15-doc-tag">'+S(typeText(r))+'</span>';if(kind==='out')return '<span class="v15-doc-tag v15-out">حواله صادره</span>';const settlement=C.records.find(x=>x.transferId===r.transferId&&x.hawalaRole==='settlement');const paid=C.records.filter(x=>x.originalHawalaId===r.transferId&&x.mode==='hawala-settlement'&&x.name==='پرداخت نشده').reduce((a,x)=>a+Number(x.amount||0),0);const full=settlement?.name!=='پرداخت نشده'?'اجرا شده':!paid?'پرداخت نشده':paid+1e-6>=Number(settlement.amount||0)?'پرداخت شده':'پرداخت قسمی';return '<span class="v15-doc-tag '+(full==='اجرا شده'||full==='پرداخت شده'?'v15-out':'v15-unpaid')+'">'+S(full)+'</span>'}
 function renderDaily(type,keepQuery){const node=$('v15-daily-'+type);if(!node)return;const state=dailyState[type],cfg=DAILY_PAGES[type],all=dailyRows(type),size=state.size;state.page=Math.max(1,state.page);const pageRows=all.slice(0,state.page*30),focus=keepQuery&&document.activeElement?.hasAttribute('data-v15-daily-query')?document.activeElement.selectionStart:null;
@@ -1968,7 +1968,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   let input=$(p+'-sarraf-fee');
   if(!input&&kind==='in'){
    const parent=document.createElement('div');parent.className='field v21-sarraf-fee v23-peer-fee';
-   parent.innerHTML=`<label for="${p}-sarraf-fee">مفاد صراف (حساب درک)</label><input type="text" inputmode="decimal" id="${p}-sarraf-fee" value="0" readonly aria-describedby="v23-in-peer-info"/><small id="v23-in-peer-info">فقط برای طریقهٔ درک فعال می‌شود.</small>`;
+   parent.innerHTML=`<label for="${p}-sarraf-fee">مفاد صراف (حساب درک)</label><input type="text" inputmode="decimal" id="${p}-sarraf-fee" value="0" aria-describedby="v23-in-peer-info"/><small id="v23-in-peer-info">فقط برای طریقهٔ درک فعال می‌شود.</small>`;
    $('v13-in-form')?.querySelector('.v22-secondary')?.insertBefore(parent,$(p+'-number')?.closest('.field'));
    input=$(p+'-sarraf-fee');
   }
@@ -1986,8 +1986,9 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   select.replaceChildren(...all.map(c=>{const opt=document.createElement('option');opt.value=opt.textContent=c;return opt}));
   select.value=all.includes(chosen)?chosen:(all.includes('AFN')?'AFN':all[0]);
   if(kind==='in'){
-   input.readOnly=true;
-   input.setAttribute('aria-label','مفاد صراف به نفع حساب درک؛ محاسبهٔ خودکار');
+   input.readOnly=false;
+   input.setAttribute('aria-label','مفاد صراف؛ قابل ویرایش یا محاسبهٔ خودکار');
+   if(!input.dataset.v23Track){input.dataset.v23Track='1';input.addEventListener('input',()=>{input.dataset.v23Manual='1'});}
   }else if(!input.dataset.v23Track){
    input.dataset.v23Track='1';input.addEventListener('input',()=>{input.dataset.v23Manual='1'});
   }
@@ -2000,17 +2001,18 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
   const container=input.closest('.field');container.classList.toggle('v23-fee-disabled',!active);
   input.disabled=!active;select.disabled=!active;
   if(!active){input.value='0';return}
+  if(input.dataset.v23Manual==='1')return
   // Preserve the stored commission during edit. Recalculate only after an actual
   // change by the cashier; previous documents must not be silently modified.
   if(C.state.hwEdit&&!recalculate)return;
   const targetCurrency=$('v13-in-converted-currency')?.value||'AFN';
-  if(recalculate||!select.value)select.value=targetCurrency;
+  if(!select.value)select.value=targetCurrency;
   const base=raw($('v13-in-converted')?.value);
   input.value=format(commissionRule(peer,select.value,base));
  }
  function outFee(recalculate=false){
   const input=$('v13-out-sarraf-fee'),select=$('v13-out-sarraf-fee-currency');if(!input||!select)return;
-  if(!recalculate||input.dataset.v23Manual==='1'||C.state.hwEdit)return;
+  if(!recalculate||input.dataset.v23Manual==='1')return;
   const account=$('v13-out-account')?.value.trim(),base=raw($('v13-out-converted')?.value);
   if(!account)return;
   input.value=format(commissionRule(account,select.value,base));
@@ -2034,7 +2036,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
    const el=$('v13-'+kind+'-sarraf-fee-currency');if(!el||el.dataset.v23FeeBound)continue;
    el.dataset.v23FeeBound='1';el.addEventListener('change',()=>kind==='in'?inFee(true):outFee(true));
    $('v13-'+kind+'-form')?.addEventListener('reset',()=>{
-    setTimeout(()=>{if(kind==='in')inFee(false);else if($('v13-out-sarraf-fee'))$('v13-out-sarraf-fee').dataset.v23Manual='0'},50);
+    setTimeout(()=>{{const input=$('v13-'+kind+'-sarraf-fee');if(input)input.dataset.v23Manual='0';if(kind==='in')inFee(true);}},50);
    });
   }
   document.addEventListener('change',event=>{
@@ -2061,7 +2063,7 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
 /* دفتر حسابات 24 — desktop icon sidebar, independent currency state, stable version. */
 (()=>{'use strict';
  const $=id=>document.getElementById(id),C=window.MC14;
- const VERSION='24.0.0';if(!C)return;
+ const VERSION='24.1.0';if(!C)return;
  function version(){if($('appVersion'))$('appVersion').textContent=VERSION;
   const header=$('v14-appbar')?.querySelector('.v14-version');if(header)header.textContent='نسخه ۲۴';
   document.querySelectorAll('#licenseOverlay h2 span').forEach(x=>{if(x.textContent.includes('نسخه'))x.textContent='نسخهٔ ۲۴'});
@@ -2114,6 +2116,73 @@ try{install()}catch(error){console.error('دفتر حسابات ۲۱:',error)}
 })();
 
 
+
+/* ===== دفتر حسابات v24.1 — readable navigation, peer document, manual/auto sarraf fee ===== */
+(()=>{'use strict';
+ const C=window.MC14,$=id=>document.getElementById(id);if(!C)return;
+ const VERSION='24.1.0';
+ function isSarraf(){const name=$('v13-in-account')?.value.trim();const account=C.accounts.find(a=>a.name===name);return Boolean(account&&(account.category==='صراف'||C.settings.sarrafRules?.[name]));}
+ function referenceField(){
+  const p='v13-in',form=$(p+'-form');if(!form)return;
+  let container=$('v24-peer-out-field');
+  if(!container){
+   container=document.createElement('div');container.id='v24-peer-out-field';container.className='field v24-peer-out-field';
+   container.innerHTML='<label for="v13-in-peer-out-number">شماره حواله صادره صراف</label><input id="v13-in-peer-out-number" type="text" maxlength="80" inputmode="text" dir="ltr" placeholder="شماره درج‌شده در سند صراف" autocomplete="off"/><small>شمارهٔ حوالهٔ صادرهٔ صراف مقابل؛ مستقل از شمارهٔ واردهٔ شما</small>';
+   const secondary=form.querySelector('.v22-secondary'),number=$('v13-in-number')?.closest('.field');
+   if(secondary)secondary.insertBefore(container,number||null);else form.append(container);
+  }
+  const active=isSarraf();container.hidden=!active;
+  const input=$('v13-in-peer-out-number');
+  // When editing an older voucher with this reference, keep the field available
+  // even if the account was later reclassified.
+  if(!active&&C.state.hwEdit){const primary=C.records.find(r=>r.transferId===C.state.hwEdit&&r.hawalaRole==='principal');if(primary?.hawalaPeerOutgoingNo){container.hidden=false;if(!input.value)input.value=primary.hawalaPeerOutgoingNo;}}
+ }
+ function feeControls(kind){const p='v13-'+kind,input=$(p+'-sarraf-fee');if(!input)return;
+  const host=input.closest('.field');if(!host)return;
+  input.readOnly=false;input.setAttribute('inputmode','decimal');
+  if(!host.querySelector('.v24-fee-tools')){
+   const bar=document.createElement('div');bar.className='v24-fee-tools';
+   bar.innerHTML='<span class="v24-fee-state" aria-live="polite">محاسبهٔ خودکار</span><button type="button" class="v24-fee-recalc" aria-label="محاسبهٔ دوبارهٔ مفاد صراف">↻ خودکار</button>';
+   host.append(bar);
+   bar.querySelector('button').addEventListener('click',()=>{
+    input.dataset.v23Manual='0';
+    if(kind==='in')window.MC23?.inFee(true);
+    else {
+     // Old outgoing auto calculation is available only within its layer;
+     // dispatch its ordinary currency change to recompute using the rule.
+     $('v13-out-sarraf-fee-currency')?.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    syncFeeState(kind);
+   });
+  }
+  input.addEventListener('input',()=>{input.dataset.v23Manual='1';syncFeeState(kind)});
+  input.addEventListener('change',()=>syncFeeState(kind));
+  syncFeeState(kind);
+ }
+ function syncFeeState(kind){const input=$('v13-'+kind+'-sarraf-fee'),field=input?.closest('.field');if(!field)return;
+  const manual=input.dataset.v23Manual==='1';field.classList.toggle('v24-fee-manual',manual);
+  const status=field.querySelector('.v24-fee-state');if(status)status.textContent=manual?'مبلغ دلخواه (قابل ویرایش)':'محاسبهٔ خودکار';
+ }
+ function version(){document.title='دفتر حسابات — نسخه ۲۴.۱';if($('appVersion'))$('appVersion').textContent=VERSION;
+  const head=$('v14-appbar')?.querySelector('.v14-version');if(head)head.textContent='نسخه ۲۴.۱';
+ }
+ function install(){referenceField();for(const kind of ['in','out'])feeControls(kind);version();
+  const account=$('v13-in-account'),form=$('v13-in-form');
+  for(const event of ['input','change'])account?.addEventListener(event,referenceField);
+  form?.addEventListener('reset',()=>setTimeout(()=>{const input=$('v13-in-peer-out-number');if(input&&!C.state.hwEdit)input.value='';referenceField();syncFeeState('in')},30));
+  $('v13-out-form')?.addEventListener('reset',()=>setTimeout(()=>syncFeeState('out'),30));
+  document.addEventListener('click',e=>{
+   if(e.target.closest('[data-v13-edit],[data-v16-voucher],[data-v17-voucher-edit]'))setTimeout(()=>{
+    referenceField();for(const kind of ['in','out'])syncFeeState(kind);
+   },80);
+  });
+  const before=C.onAfterRender,page=C.onPage;
+  C.onAfterRender=()=>{before?.();referenceField();version()};
+  C.onPage=p=>{page?.(p);referenceField();version()};
+  window.MC241={VERSION,referenceField,syncFeeState};
+ }
+ try{install()}catch(e){console.error('دفتر حسابات ۲۴.۱:',e)}
+})();
 
 /* ===== Supabase license client (previously deferred) ===== */
 
